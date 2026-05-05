@@ -18,7 +18,6 @@ const LH_HRS = 24;    // legal holiday billed as 24 hrs
 const SH_PCT = 0.30;  // special holiday: hourly × 30%
 const NS_PCT = 0.10;  // night shift: hourly × 10%
 const OT_PCT = 1.25;  // overtime: hourly × 125%
-const BILL_XTRA = 1.10; // billing SH/NS = payroll rate × 110%
 
 // SSS 2025 employee table
 function getSSS(m) {
@@ -181,9 +180,9 @@ function computeBilling(emp, att) {
 
   const basicBill = r2(smb - db*(att.absences||0));
   const lhBill    = r2(hb*(att.lhHrs||0));
-  const shRateB   = r2(hb*SH_PCT*BILL_XTRA);
+  const shRateB   = r2(hb*SH_PCT);           // billing SH = hourly × 30% (38.87)
   const shBill    = r2(shRateB*(att.shHrs||0));
-  const nsRateB   = r2(hb*NS_PCT*BILL_XTRA);
+  const nsRateB   = r2(hb*NS_PCT);           // billing NS = hourly × 10% (12.96)
   const nsBill    = r2(nsRateB*(att.nsHrs||0));
   const extraBill = r2(db*(att.extraDays||0));
   const insurance = r2(att.insurance||0);
@@ -482,6 +481,7 @@ export default function App() {
   const [period, setPeriod]   = useState("1st");
   const [selEmp, setSelEmp]   = useState(null);
   const [billingHosp, setBH]  = useState(HOSPITALS[1].name);
+  const [payrollHospFilter, setPayrollHospFilter] = useState(HOSPITALS[0].name);
   const [invNo, setInvNo]     = useState("00000069");
   const [prepBy, setPrepBy]   = useState("Shantii Imperial");
   const [printBill, setPrintBill] = useState(false);
@@ -741,12 +741,36 @@ export default function App() {
         )}
 
         {/* ══ PAYROLL ══ */}
-        {tab==="Payroll"&&(
+        {tab==="Payroll"&&(()=>{
+          const filteredEmps = employees.filter(e=>e.hospital===payrollHospFilter);
+          const filteredPayroll = allPayroll.filter(p=>p.emp.hospital===payrollHospFilter);
+          const hospShort = payrollHospFilter.includes("PRIME")?"Prime Hospital":"Unihealth Parañaque";
+          return (
           <div>
-            <h2 style={{margin:"0 0 16px",color:C.navy,fontWeight:900}}>Payroll — {periodStr}</h2>
+            {/* Hospital Toggle */}
+            <div style={{display:"flex",gap:0,marginBottom:20,borderRadius:10,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.08)",border:"1.5px solid "+C.border}}>
+              {HOSPITALS.map((h,hi)=>(
+                <button key={h.name} onClick={()=>setPayrollHospFilter(h.name)}
+                  style={{flex:1,padding:"14px 20px",border:"none",cursor:"pointer",fontWeight:700,fontSize:14,
+                    background:payrollHospFilter===h.name?C.navy:"#fff",
+                    color:payrollHospFilter===h.name?"#fff":"#374151",
+                    borderRight:hi===0?"1.5px solid "+C.border:"none",transition:"all 0.15s"}}>
+                  🏥 {h.short}
+                  <div style={{fontSize:11,fontWeight:400,marginTop:2,opacity:payrollHospFilter===h.name?0.8:0.5}}>
+                    {employees.filter(e=>e.hospital===h.name).length} employees
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:16}}>
+              <h2 style={{margin:0,color:C.navy,fontWeight:900}}>Payroll — {hospShort} — {periodStr}</h2>
+              <Btn onClick={()=>setPrintAllPayslips(true)} color={C.teal} sm>🖨️ Print Payslips</Btn>
+            </div>
+
             {/* Attendance */}
             <div style={{background:"#fff",borderRadius:10,padding:18,marginBottom:18,boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-              <div style={{fontWeight:700,color:C.navy,marginBottom:12,fontSize:14}}>📋 Attendance & Additional Pay</div>
+              <div style={{fontWeight:700,color:C.navy,marginBottom:12,fontSize:14}}>📋 Attendance & Additional Pay — {hospShort}</div>
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead><tr style={{background:C.light}}>
@@ -755,11 +779,14 @@ export default function App() {
                     ))}
                   </tr></thead>
                   <tbody>
-                    {employees.map(e=>{
+                    {filteredEmps.map(e=>{
                       const a=getAtt(e.id);
                       return(
                         <tr key={e.id} style={{borderBottom:"1px solid #f0f0f0"}}>
-                          <td style={{padding:"6px 8px",fontWeight:600,fontSize:12,whiteSpace:"nowrap"}}>{e.surname}, {e.name}</td>
+                          <td style={{padding:"6px 8px",fontWeight:600,fontSize:12,whiteSpace:"nowrap"}}>
+                            {e.surname}, {e.name}
+                            {e.isSupervisor&&<span style={{marginLeft:5,background:"#fef3c7",color:"#92400e",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>SUP</span>}
+                          </td>
                           {["absences","lhHrs","shHrs","nsHrs","otHrs","extraDays","adjustment","medFee","vale","utMins","insurance"].map(f=>(
                             <td key={f} style={{padding:"4px 6px",textAlign:"center"}}>
                               <input type="number" min="0" value={a[f]||0} onChange={ev=>setAF(e.id,f,ev.target.value)}
@@ -776,9 +803,8 @@ export default function App() {
 
             {/* Summary */}
             <div style={{background:"#fff",borderRadius:10,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
-              <div style={{background:C.navy,color:"#fff",padding:"12px 18px",fontWeight:700,fontSize:14,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
-                <span>Payroll Summary — {periodStr}</span>
-                <Btn onClick={()=>setPrintAllPayslips(true)} color={C.teal} sm>🖨️ Print All Payslips</Btn>
+              <div style={{background:C.navy,color:"#fff",padding:"12px 18px",fontWeight:700,fontSize:14}}>
+                Payroll Summary — {hospShort} — {periodStr}
               </div>
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
@@ -788,11 +814,11 @@ export default function App() {
                     ))}
                   </tr></thead>
                   <tbody>
-                    {allPayroll.map(({emp,basicPay,lhAmt,shAmt,nsAmt,otAmt,extraAmt,adjustment,subTotal,sss,philhealth,hdmf,sssLoans,hdmfLoans,medFee,vale,utAmt,netPay},i)=>(
+                    {filteredPayroll.map(({emp,basicPay,lhAmt,shAmt,nsAmt,otAmt,extraAmt,adjustment,subTotal,sss,philhealth,hdmf,sssLoans,hdmfLoans,medFee,vale,utAmt,netPay},i)=>(
                       <tr key={emp.id} style={{background:i%2===0?"#f9fafb":"#fff",borderBottom:"1px solid #f0f0f0"}}>
                         <td style={{padding:"8px 8px",fontSize:11,color:"#9ca3af"}}>{i+1}</td>
                         <td style={{padding:"8px 8px",fontWeight:700,fontSize:12}}>{emp.surname}</td>
-                        <td style={{padding:"8px 8px",fontSize:12}}>{emp.name}</td>
+                        <td style={{padding:"8px 8px",fontSize:12}}>{emp.name}{emp.isSupervisor&&<span style={{marginLeft:4,background:"#fef3c7",color:"#92400e",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>SUP</span>}</td>
                         {[basicPay,lhAmt,shAmt,nsAmt,otAmt,extraAmt,adjustment].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right"}}>{fmt(v)}</td>)}
                         <td style={{padding:"8px 8px",textAlign:"right",fontWeight:700,color:C.navy}}>{fmt(subTotal)}</td>
                         {[sss,philhealth,hdmf].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right",color:C.red}}>{fmt(v)}</td>)}
@@ -805,12 +831,12 @@ export default function App() {
                   </tbody>
                   <tfoot>
                     <tr style={{background:C.navy,color:"#fff",fontWeight:700}}>
-                      <td colSpan={3} style={{padding:"10px 8px",fontSize:12}}>TOTAL</td>
+                      <td colSpan={3} style={{padding:"10px 8px",fontSize:12}}>TOTAL — {filteredPayroll.length} employees</td>
                       {["basicPay","lhAmt","shAmt","nsAmt","otAmt","extraAmt","adjustment","subTotal","sss","philhealth","hdmf","sssLoans","hdmfLoans"].map(k=>(
-                        <td key={k} style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(allPayroll,k))}</td>
+                        <td key={k} style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(filteredPayroll,k))}</td>
                       ))}
-                      <td style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(allPayroll,"medFee")+sumK(allPayroll,"vale")+sumK(allPayroll,"utAmt"))}</td>
-                      <td style={{padding:"10px 8px",textAlign:"right",fontSize:12}}>{fmt(sumK(allPayroll,"netPay"))}</td>
+                      <td style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(filteredPayroll,"medFee")+sumK(filteredPayroll,"vale")+sumK(filteredPayroll,"utAmt"))}</td>
+                      <td style={{padding:"10px 8px",textAlign:"right",fontSize:12}}>{fmt(sumK(filteredPayroll,"netPay"))}</td>
                       <td></td>
                     </tr>
                   </tfoot>
@@ -818,7 +844,8 @@ export default function App() {
               </div>
             </div>
           </div>
-        )}
+          );
+        })()}
 
         {/* ══ PAYSLIP ══ */}
         {tab==="Payslip"&&(
