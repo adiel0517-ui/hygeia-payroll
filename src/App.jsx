@@ -29,7 +29,7 @@ const getPH   = (m) => (Math.min(Math.max(m,10000),100000)*0.05)/2;
 const getHDMF = (m) => Math.min(m*0.02,100)/2;
 
 // Contract billing daily rate formula
-function calcBillingDaily(dailyPayroll, isSupervisor) {
+function calcBillingMonthly(dailyPayroll, isSupervisor) {
   const monthly    = dailyPayroll * 313 / 12;
   const m13        = monthly / 12;
   const sil        = dailyPayroll * 5 / 12;
@@ -39,8 +39,10 @@ function calcBillingDaily(dailyPayroll, isSupervisor) {
   const vatAmt     = gross * VAT;
   const govt       = isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
   const totalGovt  = govt.sss + govt.philhealth + govt.ec + govt.pagibig;
-  const monthlyRate= gross + vatAmt + totalGovt;
-  return r2(monthlyRate / 2 / FACTOR);
+  return gross + vatAmt + totalGovt; // exact monthly contract rate
+}
+function calcBillingDaily(dailyPayroll, isSupervisor) {
+  return r2(calcBillingMonthly(dailyPayroll, isSupervisor) / 2 / FACTOR);
 }
 
 const r2  = (n) => Math.round((n||0)*100)/100;
@@ -57,6 +59,7 @@ const HOSPITALS = [
 // ── Initial employees from Adiel_Copy.xlsx ───────────────────────────
 const mkEmp = (id,surname,name,dailyPayroll,hospital,isSup,sssNo,phNo,hdmfNo) => ({
   id, surname, name, dailyPayroll,
+  monthlyBilling: calcBillingMonthly(dailyPayroll, isSup),
   dailyBilling: calcBillingDaily(dailyPayroll, isSup),
   isSupervisor: isSup, hospital, sssNo, phNo, hdmfNo
 });
@@ -176,7 +179,10 @@ function computePayroll(emp, att, empLoans) {
 function computeBilling(emp, att) {
   const db  = emp.dailyBilling;
   const hb  = r2(db/8);
-  const smb = r2(db*FACTOR);
+  // Semi-monthly basic comes from monthly contract rate / 2 directly
+  // NOT from daily * FACTOR (which loses precision due to rounding of daily)
+  // monthly contract rate = calcMonthlyRate(emp) stored in emp.monthlyBilling
+  const smb = r2(emp.monthlyBilling / 2);
 
   const basicBill = r2(smb - db*(att.absences||0));
   const lhBill    = r2(hb*(att.lhHrs||0));
@@ -518,7 +524,7 @@ export default function App() {
     if(!ef.surname||!ef.dailyPayroll) return;
     const dp = parseFloat(ef.dailyPayroll)||695;
     const isSup = ef.isSupervisor==="true"||ef.isSupervisor===true;
-    const data = {...ef, dailyPayroll:dp, dailyBilling:calcBillingDaily(dp,isSup), isSupervisor:isSup};
+    const data = {...ef, dailyPayroll:dp, monthlyBilling:calcBillingMonthly(dp,isSup), dailyBilling:calcBillingDaily(dp,isSup), isSupervisor:isSup};
     if(editId) setEmp(p=>p.map(e=>e.id===editId?{...e,...data}:e));
     else setEmp(p=>[...p,{...data,id:Date.now()}]);
     setShowEF(false); setEditId(null);
