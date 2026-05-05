@@ -49,7 +49,7 @@ const r2  = (n) => Math.round((n||0)*100)/100;
 const fmt = (n) => "₱" + r2(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
 const fmtN= (n) => r2(n).toLocaleString("en-PH",{minimumFractionDigits:2,maximumFractionDigits:2});
 
-const TABS = ["Employees","Loans","Payroll","Payslip","Billing"];
+const TABS = ["Employees","Loans","Payroll","Payslip","Billing","P&L","Payables"];
 const LOAN_TYPES = ["SSS Salary Loan","SSS Calamity Loan","Pag-IBIG MPL","Pag-IBIG Calamity Loan"];
 const HOSPITALS = [
   { name:"PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", short:"Prime Hospital", address:"San Agustin St. Corner Caruncho Ave., Brgy. Pinagbuhatan, Pasig City", contact:"Col. Agustin A. Zozobrado" },
@@ -65,73 +65,73 @@ const mkEmp = (id,surname,name,dailyPayroll,hospital,isSup,sssNo,phNo,hdmfNo) =>
 });
 
 const INIT_EMP = [
-  // ── PRIME HOSPITAL (9 Janitors + 1 Supervisor) ────────────────────
+  // ── PRIME HOSPITAL — sorted A→Z by surname ────────────────────────
   mkEmp(1, "BALBIN JR.", "ROMEO",      695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234561-1","12-345678901-1","1234-5678-9001"),
   mkEmp(2, "DACILLO",    "JORDAN",     695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234562-2","12-345678901-2","1234-5678-9002"),
   mkEmp(3, "DIAZ",       "CRESELYN",   695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234563-3","12-345678901-3","1234-5678-9003"),
   mkEmp(4, "GARDIGO",    "JENELITA",   695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234564-4","12-345678901-4","1234-5678-9004"),
   mkEmp(5, "LOLONG",     "ELINOR",     695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234565-5","12-345678901-5","1234-5678-9005"),
-  mkEmp(6, "PAJOTA",     "HENRY JAMES",695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234566-6","12-345678901-6","1234-5678-9006"),
-  mkEmp(7, "PEPITO",     "MARISSA",    695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234567-7","12-345678901-7","1234-5678-9007"),
-  mkEmp(8, "REYES",      "MADELYN",    695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234568-8","12-345678901-8","1234-5678-9008"),
-  mkEmp(9, "SANDOC",     "REYNANTE",   695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234569-9","12-345678901-9","1234-5678-9009"),
-  mkEmp(10,"MENDOZA",    "JESSIE",     820, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", true,  "34-1234560-0","12-345678900-0","1234-5678-9000"),
-  // ── UNIHEALTH PARAÑAQUE (15 Employees) ───────────────────────────
-  mkEmp(11,"CANGAS",     "DOMINADOR",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234561-1","12-445678901-1","2234-5678-9001"),
-  mkEmp(12,"ABANAG",     "MICO",       695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234562-2","12-445678901-2","2234-5678-9002"),
+  mkEmp(6, "MENDOZA",    "JESSIE",     820, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", true,  "34-1234560-0","12-345678900-0","1234-5678-9000"),
+  mkEmp(7, "PAJOTA",     "HENRY JAMES",695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234566-6","12-345678901-6","1234-5678-9006"),
+  mkEmp(8, "PEPITO",     "MARISSA",    695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234567-7","12-345678901-7","1234-5678-9007"),
+  mkEmp(9, "REYES",      "MADELYN",    695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234568-8","12-345678901-8","1234-5678-9008"),
+  mkEmp(10,"SANDOC",     "REYNANTE",   695, "PRIME HOSPITAL AND MEDICAL CENTER - PASIG INC.", false, "34-1234569-9","12-345678901-9","1234-5678-9009"),
+  // ── UNIHEALTH PARAÑAQUE — sorted A→Z by surname ──────────────────
+  mkEmp(11,"ABANAG",     "MICO",       695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234562-2","12-445678901-2","2234-5678-9002"),
+  mkEmp(12,"CANGAS",     "DOMINADOR",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234561-1","12-445678901-1","2234-5678-9001"),
   mkEmp(13,"CLARIÑO",    "ANGELA",     695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234563-3","12-445678901-3","2234-5678-9003"),
   mkEmp(14,"FAJARDO",    "CHRISTIAN",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234564-4","12-445678901-4","2234-5678-9004"),
   mkEmp(15,"FAJARDO",    "ODEZA",      695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234565-5","12-445678901-5","2234-5678-9005"),
-  mkEmp(16,"GLOCENO",    "NANCY",      695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234566-6","12-445678901-6","2234-5678-9006"),
-  mkEmp(17,"HIZON",      "PAULINO",    695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234567-7","12-445678901-7","2234-5678-9007"),
-  mkEmp(18,"TABOTABO",   "MARY JANE",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234568-8","12-445678901-8","2234-5678-9008"),
-  mkEmp(19,"URIBE",      "MAYBELLE JANE",695,"UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234569-9","12-445678901-9","2234-5678-9009"),
-  mkEmp(20,"PAHIT",      "LEORIZA",    695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234560-0","12-445678900-0","2234-5678-9000"),
-  mkEmp(21,"MECHA",      "EVANGELINE", 695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234561-0","12-445678900-1","2234-5678-9010"),
-  mkEmp(22,"MALINGKIS",  "JONIE",      695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234562-0","12-445678900-2","2234-5678-9011"),
-  mkEmp(23,"GARNACE",    "REYNALDA",   695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234563-0","12-445678900-3","2234-5678-9012"),
-  mkEmp(24,"JAMITO",     "PRIMITIVO",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234564-0","12-445678900-4","2234-5678-9013"),
-  mkEmp(25,"MANILA",     "ALMA",       695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234565-0","12-445678900-5","2234-5678-9014"),
+  mkEmp(16,"GARNACE",    "REYNALDA",   695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234563-0","12-445678900-3","2234-5678-9012"),
+  mkEmp(17,"GLOCENO",    "NANCY",      695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234566-6","12-445678901-6","2234-5678-9006"),
+  mkEmp(18,"HIZON",      "PAULINO",    695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234567-7","12-445678901-7","2234-5678-9007"),
+  mkEmp(19,"JAMITO",     "PRIMITIVO",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234564-0","12-445678900-4","2234-5678-9013"),
+  mkEmp(20,"MALINGKIS",  "JONIE",      695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234562-0","12-445678900-2","2234-5678-9011"),
+  mkEmp(21,"MANILA",     "ALMA",       695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234565-0","12-445678900-5","2234-5678-9014"),
+  mkEmp(22,"MECHA",      "EVANGELINE", 695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234561-0","12-445678900-1","2234-5678-9010"),
+  mkEmp(23,"PAHIT",      "LEORIZA",    695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234560-0","12-445678900-0","2234-5678-9000"),
+  mkEmp(24,"TABOTABO",   "MARY JANE",  695, "UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234568-8","12-445678901-8","2234-5678-9008"),
+  mkEmp(25,"URIBE",      "MAYBELLE JANE",695,"UNIHEALTH PARANAQUE HOSPITAL AND MEDICAL CENTER", false,"34-2234569-9","12-445678901-9","2234-5678-9009"),
 ];
 
 const INIT_LOANS = [
   // ── PRIME HOSPITAL ─────────────────────────────────────────────────
   // BALBIN JR., ROMEO (id:1) — Pag-IBIG MPL, DV: 02/11/2026, 36 months
-  { id:101, empId:1,  type:"Pag-IBIG MPL",        monthly:563.81, balance:15243.56, startMonth:"2026-05" },
+  { id:101, empId:1,  type:"Pag-IBIG MPL",          monthly:563.81, balance:15243.56, startMonth:"2026-05" },
   // DIAZ, CRESELYN (id:3) — SSS Salary + Pag-IBIG MPL (pre-hire 12/05/2025)
-  { id:102, empId:3,  type:"SSS Salary Loan",      monthly:1968,   balance:10000,   startMonth:"2025-12" },
-  { id:103, empId:3,  type:"Pag-IBIG MPL",         monthly:750,    balance:5000,    startMonth:"2025-12" },
-  // SANDOC, REYNANTE (id:9) — SSS Salary Loan
-  { id:104, empId:9,  type:"SSS Salary Loan",      monthly:1431,   balance:8000,    startMonth:"2025-12" },
-  // MENDOZA, JESSIE (id:10) — SSS Salary Loan (pre-hire 02/16/2026)
-  { id:105, empId:10, type:"SSS Salary Loan",      monthly:716,    balance:5000,    startMonth:"2026-02" },
+  { id:102, empId:3,  type:"SSS Salary Loan",        monthly:1968,   balance:10000,   startMonth:"2025-12" },
+  { id:103, empId:3,  type:"Pag-IBIG MPL",           monthly:750,    balance:5000,    startMonth:"2025-12" },
+  // MENDOZA, JESSIE (id:6) — SSS Salary Loan (pre-hire 02/16/2026)
+  { id:105, empId:6,  type:"SSS Salary Loan",        monthly:716,    balance:5000,    startMonth:"2026-02" },
+  // SANDOC, REYNANTE (id:10) — SSS Salary Loan
+  { id:104, empId:10, type:"SSS Salary Loan",        monthly:1431,   balance:8000,    startMonth:"2025-12" },
 
   // ── UNIHEALTH PARAÑAQUE ────────────────────────────────────────────
-  // CLARIÑO, ANGELA (id:13) — SSS Salary + Pag-IBIG Cal/STL (from Spic N Span)
-  { id:201, empId:13, type:"SSS Salary Loan",      monthly:2826,   balance:15000,   startMonth:"2025-12" },
-  { id:202, empId:13, type:"Pag-IBIG Calamity Loan",monthly:2848,  balance:10419.61,startMonth:"2025-12" },
+  // CLARIÑO, ANGELA (id:13) — SSS Salary + Pag-IBIG Calamity
+  { id:201, empId:13, type:"SSS Salary Loan",        monthly:2826,   balance:15000,   startMonth:"2025-12" },
+  { id:202, empId:13, type:"Pag-IBIG Calamity Loan", monthly:2848,   balance:10419.61,startMonth:"2025-12" },
   // FAJARDO, CHRISTIAN (id:14) — SSS Calamity Loan
-  { id:203, empId:14, type:"SSS Calamity Loan",    monthly:1524,   balance:8000,    startMonth:"2026-01" },
+  { id:203, empId:14, type:"SSS Calamity Loan",      monthly:1524,   balance:8000,    startMonth:"2026-01" },
   // FAJARDO, ODEZA (id:15) — SSS Salary Loan
-  { id:204, empId:15, type:"SSS Salary Loan",      monthly:1584,   balance:4972.76, startMonth:"2026-01" },
-  // GARNACE, REYNALDA (id:23) — SSS Calamity + SSS Salary
-  { id:205, empId:23, type:"SSS Calamity Loan",    monthly:1610,   balance:6447.15, startMonth:"2025-08" },
-  { id:206, empId:23, type:"SSS Salary Loan",      monthly:1584,   balance:7000,    startMonth:"2025-12" },
-  // HIZON, PAULINO (id:17) — SSS Calamity + SSS Salary Loan (17,500)
-  { id:207, empId:17, type:"SSS Calamity Loan",    monthly:1610,   balance:32856.07,startMonth:"2024-11" },
-  { id:208, empId:17, type:"SSS Salary Loan",      monthly:3164,   balance:17500,   startMonth:"2025-11" },
-  // JAMITO, PRIMITIVO (id:24) — SSS Calamity + SSS Salary
-  { id:209, empId:24, type:"SSS Calamity Loan",    monthly:1524,   balance:6977.65, startMonth:"2025-03" },
-  { id:210, empId:24, type:"SSS Salary Loan",      monthly:1584,   balance:7000,    startMonth:"2025-12" },
-  // MECHA, EVANGELINE (id:21) — SSS Calamity + SSS Salary (34,000, amort 1537.73)
-  { id:211, empId:21, type:"SSS Calamity Loan",    monthly:1524,   balance:15791.78,startMonth:"2025-09" },
-  { id:212, empId:21, type:"SSS Salary Loan",      monthly:3076,   balance:34000,   startMonth:"2025-02" },
-  // PAHIT, LEORIZA (id:20) — SSS Calamity + SSS Salary
-  { id:213, empId:20, type:"SSS Calamity Loan",    monthly:1524,   balance:10376.78,startMonth:"2025-08" },
-  { id:214, empId:20, type:"SSS Salary Loan",      monthly:1494,   balance:7000,    startMonth:"2025-12" },
-  // URIBE, MAYBELLE JANE (id:19) — SSS Calamity + SSS Salary
-  { id:215, empId:19, type:"SSS Calamity Loan",    monthly:1612,   balance:4297.46, startMonth:"2024-10" },
-  { id:216, empId:19, type:"SSS Salary Loan",      monthly:3166,   balance:34000,   startMonth:"2025-12" },
+  { id:204, empId:15, type:"SSS Salary Loan",        monthly:1584,   balance:4972.76, startMonth:"2026-01" },
+  // GARNACE, REYNALDA (id:16) — SSS Calamity + SSS Salary
+  { id:205, empId:16, type:"SSS Calamity Loan",      monthly:1610,   balance:6447.15, startMonth:"2025-08" },
+  { id:206, empId:16, type:"SSS Salary Loan",        monthly:1584,   balance:7000,    startMonth:"2025-12" },
+  // HIZON, PAULINO (id:18) — SSS Calamity + SSS Salary Loan
+  { id:207, empId:18, type:"SSS Calamity Loan",      monthly:1610,   balance:32856.07,startMonth:"2024-11" },
+  { id:208, empId:18, type:"SSS Salary Loan",        monthly:3164,   balance:17500,   startMonth:"2025-11" },
+  // JAMITO, PRIMITIVO (id:19) — SSS Calamity + SSS Salary
+  { id:209, empId:19, type:"SSS Calamity Loan",      monthly:1524,   balance:6977.65, startMonth:"2025-03" },
+  { id:210, empId:19, type:"SSS Salary Loan",        monthly:1584,   balance:7000,    startMonth:"2025-12" },
+  // MECHA, EVANGELINE (id:22) — SSS Calamity + SSS Salary
+  { id:211, empId:22, type:"SSS Calamity Loan",      monthly:1524,   balance:15791.78,startMonth:"2025-09" },
+  { id:212, empId:22, type:"SSS Salary Loan",        monthly:3076,   balance:34000,   startMonth:"2025-02" },
+  // PAHIT, LEORIZA (id:23) — SSS Calamity + SSS Salary
+  { id:213, empId:23, type:"SSS Calamity Loan",      monthly:1524,   balance:10376.78,startMonth:"2025-08" },
+  { id:214, empId:23, type:"SSS Salary Loan",        monthly:1494,   balance:7000,    startMonth:"2025-12" },
+  // URIBE, MAYBELLE JANE (id:25) — SSS Calamity + SSS Salary
+  { id:215, empId:25, type:"SSS Calamity Loan",      monthly:1612,   balance:4297.46, startMonth:"2024-10" },
+  { id:216, empId:25, type:"SSS Salary Loan",        monthly:3166,   balance:34000,   startMonth:"2025-12" },
 ];
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -494,6 +494,24 @@ export default function App() {
   const [printPayslip, setPrintPayslip] = useState(null); // emp id
   const [printAllPayslips, setPrintAllPayslips] = useState(false);
 
+  // P&L state
+  const [pnlExpenses, setPnlExpenses] = useState([
+    { id:1, label:"Office Rent",          amount:15000, category:"overhead" },
+    { id:2, label:"Utilities (Elec/Water)",amount:5000,  category:"overhead" },
+    { id:3, label:"Internet & Phone",      amount:2500,  category:"overhead" },
+    { id:4, label:"Transportation",        amount:3000,  category:"overhead" },
+    { id:5, label:"Supplies & Materials",  amount:2000,  category:"overhead" },
+    { id:6, label:"SSS Employer Share",    amount:0,     category:"labor" },
+    { id:7, label:"PhilHealth Employer",   amount:0,     category:"labor" },
+    { id:8, label:"EC Insurance",          amount:0,     category:"labor" },
+    { id:9, label:"Pag-IBIG Employer",     amount:0,     category:"labor" },
+  ]);
+  const [newExp, setNewExp] = useState({ label:"", amount:"", category:"overhead" });
+  // Payables - quarterly VAT tracking (stores months that have been "filed")
+  const [vatFiled, setVatFiled] = useState({});
+  // Supplies input per cut-off (separate from P&L)
+  const [suppliesAmt, setSuppliesAmt] = useState(0);
+
   // Employee form
   const [showEF, setShowEF] = useState(false);
   const [editId, setEditId] = useState(null);
@@ -577,7 +595,7 @@ export default function App() {
         <div style={{display:"flex",gap:2}}>
           {TABS.map(t=>(
             <button key={t} onClick={()=>setTab(t)} style={{padding:"8px 18px",border:"none",borderRadius:"7px 7px 0 0",fontWeight:700,fontSize:13,cursor:"pointer",background:tab===t?"#fff":"rgba(255,255,255,0.13)",color:tab===t?C.navy:"#fff"}}>
-              {{"Employees":"👥","Loans":"💳","Payroll":"💼","Payslip":"📄","Billing":"🧾"}[t]} {t}
+              {{"Employees":"👥","Loans":"💳","Payroll":"💼","Payslip":"📄","Billing":"🧾","P&L":"📊","Payables":"🏛️"}[t]} {t}
             </button>
           ))}
         </div>
@@ -1049,6 +1067,433 @@ export default function App() {
             }
           </div>
         )}
+
+
+        {/* ══ P&L ══ */}
+        {tab==="P&L"&&(()=>{
+          // ── Revenue: total billing from all hospitals ──
+          const allBillingRows = employees.map(e=>({
+            emp:e, att:getAtt(e.id), ...computeBilling(e, getAtt(e.id))
+          }));
+          const totalRevenue = sumK(allBillingRows,"netBill");
+
+          // ── COGS: total net payroll (what employees actually receive) ──
+          const totalNetPayroll = sumK(allPayroll,"netPay");
+          // Total gross payroll (what employees are owed before deductions)
+          const totalGrossPayroll = sumK(allPayroll,"subTotal");
+
+          // ── Auto-calculate employer govt contributions from actual employees ──
+          const empGovtSSS = allPayroll.reduce((s,p)=>{
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.sss/2;
+          },0);
+          const empGovtPH = allPayroll.reduce((s,p)=>{
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.philhealth/2;
+          },0);
+          const empGovtEC = allPayroll.reduce((s,p)=>{
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.ec/2;
+          },0);
+          const empGovtHDMF = allPayroll.reduce((s,p)=>{
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.pagibig/2;
+          },0);
+
+          // Update auto-computed govt contributions in expense list
+          const displayExpenses = pnlExpenses.map(e=>{
+            if(e.id===6) return {...e, amount:r2(empGovtSSS)};
+            if(e.id===7) return {...e, amount:r2(empGovtPH)};
+            if(e.id===8) return {...e, amount:r2(empGovtEC)};
+            if(e.id===9) return {...e, amount:r2(empGovtHDMF)};
+            return e;
+          });
+
+          const totalOverhead = displayExpenses.filter(e=>e.category==="overhead").reduce((s,e)=>s+r2(e.amount||0),0);
+          const totalLabourCost = displayExpenses.filter(e=>e.category==="labor").reduce((s,e)=>s+r2(e.amount||0),0);
+          const totalExpenses = r2(totalOverhead + totalLabourCost + totalGrossPayroll);
+          const grossProfit = r2(totalRevenue - totalGrossPayroll);
+          const netProfit = r2(totalRevenue - totalExpenses);
+          const margin = totalRevenue > 0 ? (netProfit/totalRevenue*100).toFixed(1) : 0;
+
+          const isProfit = netProfit >= 0;
+
+          const SRow = ({label,value,bold,green,red,indent,border})=>(
+            <div style={{display:"flex",justifyContent:"space-between",padding:"7px 12px",
+              borderTop:border?"2px solid "+C.border:"1px solid #f0f0f0",
+              background:bold?"#f4f6f9":"#fff"}}>
+              <span style={{fontSize:13,paddingLeft:indent?16:0,color:red?C.red:green?C.teal:"#374151",fontWeight:bold?700:400}}>{label}</span>
+              <span style={{fontSize:13,fontWeight:bold?800:600,color:red?C.red:green?C.teal:"#1f2937"}}>{fmt(value)}</span>
+            </div>
+          );
+
+          return (
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <h2 style={{margin:0,color:C.navy,fontWeight:900}}>Profit & Loss — {periodStr}</h2>
+              <div style={{fontSize:12,color:"#6b7280"}}>Rough estimate for internal use</div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20,marginBottom:24}}>
+
+              {/* ── LEFT: P&L STATEMENT ── */}
+              <div>
+                <div style={{background:"#fff",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 12px rgba(0,0,0,0.07)"}}>
+                  <div style={{background:C.navy,color:"#fff",padding:"13px 18px",fontWeight:800,fontSize:15}}>
+                    📊 P&L Statement
+                  </div>
+
+                  {/* Revenue */}
+                  <div style={{background:C.teal,color:"#fff",padding:"8px 12px",fontWeight:700,fontSize:12,letterSpacing:0.5}}>REVENUE</div>
+                  <SRow label="Total Billing (All Hospitals)" value={totalRevenue} bold green />
+                  <SRow indent label={`Prime Hospital (${employees.filter(e=>e.hospital.includes("PRIME")).length} staff)`}
+                    value={sumK(allBillingRows.filter(r=>r.emp.hospital.includes("PRIME")),"netBill")} />
+                  <SRow indent label={`Unihealth Parañaque (${employees.filter(e=>e.hospital.includes("UNIHEALTH")).length} staff)`}
+                    value={sumK(allBillingRows.filter(r=>r.emp.hospital.includes("UNIHEALTH")),"netBill")} />
+
+                  {/* COGS */}
+                  <div style={{background:"#dc2626",color:"#fff",padding:"8px 12px",fontWeight:700,fontSize:12,letterSpacing:0.5,marginTop:4}}>COST OF SERVICES (PAYROLL)</div>
+                  <SRow label="Total Gross Payroll" value={totalGrossPayroll} bold red />
+                  <SRow indent label={`Prime Hospital (${employees.filter(e=>e.hospital.includes("PRIME")).length} staff)`}
+                    value={sumK(allPayroll.filter(p=>p.emp.hospital.includes("PRIME")),"subTotal")} />
+                  <SRow indent label={`Unihealth Parañaque (${employees.filter(e=>e.hospital.includes("UNIHEALTH")).length} staff)`}
+                    value={sumK(allPayroll.filter(p=>p.emp.hospital.includes("UNIHEALTH")),"subTotal")} />
+
+                  <SRow label="GROSS PROFIT" value={grossProfit} bold border green={grossProfit>=0} red={grossProfit<0} />
+
+                  {/* Operating Expenses */}
+                  <div style={{background:C.amber,color:"#fff",padding:"8px 12px",fontWeight:700,fontSize:12,letterSpacing:0.5,marginTop:4}}>OPERATING EXPENSES</div>
+                  {displayExpenses.filter(e=>e.category==="overhead").map(e=>(
+                    <SRow key={e.id} indent label={e.label} value={r2(e.amount||0)} />
+                  ))}
+                  <div style={{background:"#f3f4f6",padding:"8px 12px",fontWeight:700,fontSize:12,letterSpacing:0.5,marginTop:2}}>EMPLOYER GOVT CONTRIBUTIONS (auto)</div>
+                  {displayExpenses.filter(e=>e.category==="labor").map(e=>(
+                    <SRow key={e.id} indent label={`${e.label} (${employees.length} staff)`} value={r2(e.amount||0)} />
+                  ))}
+                  <SRow label="TOTAL EXPENSES" value={r2(totalOverhead+totalLabourCost)} bold border red />
+
+                  {/* Net */}
+                  <div style={{padding:"14px 18px",background:isProfit?"#f0fdf4":"#fef2f2",display:"flex",justifyContent:"space-between",alignItems:"center",borderTop:"2px solid "+(isProfit?C.teal:C.red)}}>
+                    <div>
+                      <div style={{fontWeight:900,fontSize:16,color:isProfit?C.teal:C.red}}>{isProfit?"NET PROFIT ✅":"NET LOSS ⚠️"}</div>
+                      <div style={{fontSize:12,color:"#6b7280",marginTop:2}}>Margin: {margin}%</div>
+                    </div>
+                    <div style={{fontWeight:900,fontSize:28,color:isProfit?C.teal:C.red}}>{fmt(netProfit)}</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* ── RIGHT: EXPENSE INPUTS ── */}
+              <div>
+                {/* Summary Cards */}
+                <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:12,marginBottom:18}}>
+                  {[
+                    {label:"Total Revenue",     value:totalRevenue,      color:C.teal,  icon:"💰"},
+                    {label:"Total Payroll",      value:totalGrossPayroll, color:C.red,   icon:"👥"},
+                    {label:"Other Expenses",     value:r2(totalOverhead+totalLabourCost), color:C.amber, icon:"📋"},
+                    {label:isProfit?"Net Profit":"Net Loss", value:Math.abs(netProfit), color:isProfit?C.teal:C.red, icon:isProfit?"📈":"📉"},
+                  ].map(card=>(
+                    <div key={card.label} style={{background:"#fff",borderRadius:10,padding:"14px 16px",boxShadow:"0 2px 8px rgba(0,0,0,0.06)",borderLeft:"4px solid "+card.color}}>
+                      <div style={{fontSize:11,color:"#6b7280",fontWeight:600}}>{card.icon} {card.label}</div>
+                      <div style={{fontWeight:900,fontSize:18,color:card.color,marginTop:4}}>{fmt(card.value)}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Expense Editor */}
+                <div style={{background:"#fff",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 8px rgba(0,0,0,0.06)"}}>
+                  <div style={{background:C.amber,color:"#fff",padding:"13px 18px",fontWeight:800,fontSize:14}}>
+                    ✏️ Operating Expenses
+                  </div>
+                  <div style={{padding:16}}>
+                    {pnlExpenses.filter(e=>e.category==="overhead").map(e=>(
+                      <div key={e.id} style={{display:"flex",alignItems:"center",gap:10,marginBottom:10}}>
+                        <div style={{flex:1,fontSize:13,color:"#374151",fontWeight:500}}>{e.label}</div>
+                        <div style={{display:"flex",alignItems:"center",gap:6}}>
+                          <span style={{fontSize:12,color:"#9ca3af"}}>₱</span>
+                          <input type="number" min="0" value={e.amount}
+                            onChange={ev=>setPnlExpenses(p=>p.map(x=>x.id===e.id?{...x,amount:parseFloat(ev.target.value)||0}:x))}
+                            style={{width:110,padding:"6px 10px",borderRadius:6,border:"1.5px solid "+C.border,fontSize:13,textAlign:"right"}}/>
+                          <button onClick={()=>setPnlExpenses(p=>p.filter(x=>x.id!==e.id))}
+                            style={{background:"#fef2f2",color:C.red,border:"none",borderRadius:5,padding:"5px 8px",cursor:"pointer",fontSize:11,fontWeight:700}}>✕</button>
+                        </div>
+                      </div>
+                    ))}
+
+                    <div style={{background:"#f3f4f6",borderRadius:8,padding:"10px 12px",marginTop:8,marginBottom:14}}>
+                      <div style={{fontSize:11,color:"#6b7280",fontWeight:700,marginBottom:8}}>EMPLOYER GOVT CONTRIBUTIONS (auto-computed)</div>
+                      {displayExpenses.filter(e=>e.category==="labor").map(e=>(
+                        <div key={e.id} style={{display:"flex",justifyContent:"space-between",padding:"3px 0",fontSize:12,color:"#555"}}>
+                          <span>{e.label}</span><span style={{fontWeight:600}}>{fmt(r2(e.amount||0))}</span>
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Add new expense */}
+                    <div style={{borderTop:"1.5px dashed "+C.border,paddingTop:14}}>
+                      <div style={{fontSize:12,fontWeight:700,color:"#6b7280",marginBottom:8}}>ADD NEW EXPENSE</div>
+                      <div style={{display:"flex",gap:8,alignItems:"center"}}>
+                        <input placeholder="Expense label" value={newExp.label}
+                          onChange={e=>setNewExp(p=>({...p,label:e.target.value}))}
+                          style={{flex:1,padding:"7px 10px",borderRadius:6,border:"1.5px solid "+C.border,fontSize:13}}/>
+                        <input type="number" placeholder="Amount" min="0" value={newExp.amount}
+                          onChange={e=>setNewExp(p=>({...p,amount:e.target.value}))}
+                          style={{width:100,padding:"7px 10px",borderRadius:6,border:"1.5px solid "+C.border,fontSize:13,textAlign:"right"}}/>
+                        <button onClick={()=>{
+                          if(!newExp.label||!newExp.amount) return;
+                          setPnlExpenses(p=>[...p,{id:Date.now(),label:newExp.label,amount:parseFloat(newExp.amount)||0,category:"overhead"}]);
+                          setNewExp({label:"",amount:"",category:"overhead"});
+                        }} style={{background:C.teal,color:"#fff",border:"none",borderRadius:6,padding:"7px 14px",fontWeight:700,cursor:"pointer",fontSize:13}}>+ Add</button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          );
+        })()}
+
+
+        {/* ══ PAYABLES ══ */}
+        {tab==="Payables"&&(()=>{
+          // ── All billing rows (both hospitals) ─────────────────────────────
+          const allBillingRows = employees.map(e=>({
+            emp:e, att:getAtt(e.id), ...computeBilling(e, getAtt(e.id))
+          }));
+
+          // ── VAT Computation ───────────────────────────────────────────────
+          // VAT is based on Gross Receipts (before govt contributions) per contract
+          // Gross Receipts = total billing net / (1 + 0.12) * 0.12  would be wrong
+          // Per contract: VAT = Gross Receipts × 12%, where Gross = totalEmp + adminFee
+          // Simplest: derive from billing rows — billing already includes VAT in the rate
+          // VAT per employee per cutoff = (monthly contract rate × 0.12 / (1.12)) / 2... 
+          // Actually from contract: Gross Receipts × 12% — we track this from billing daily
+          // VAT portion = billingDaily * FACTOR * VAT_RATE / (1+VAT_RATE) per semi-monthly
+          // But cleaner: VAT_cutoff = netBill * (VAT / (1 + VAT)) for each row
+          // Actually the contract formula: billing rate INCLUDES vat already
+          // VAT = gross_receipts * 0.12, gross receipts = billing - govt employer share
+          // Let's compute per employee: grossReceipts = (monthlyBilling/2) - govtTotal/2
+          const vatTotal = allBillingRows.reduce((s, r) => {
+            const govtMonthly = (r.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor);
+            const govtSM = (govtMonthly.sss + govtMonthly.philhealth + govtMonthly.ec + govtMonthly.pagibig) / 2;
+            const grossReceipts = r2(r.smb - govtSM);
+            const vat = r2(grossReceipts * (VAT / (1 + VAT)));
+            return s + vat;
+          }, 0);
+
+          const vatMonthly = r2(vatTotal * 2);   // both cutoffs
+          const vatQuarterly = r2(vatMonthly * 3);
+
+          // ── SSS Payables ──────────────────────────────────────────────────
+          // Employee share (deducted from payroll) per cutoff
+          const sssEmpShare = r2(sumK(allPayroll, "sss"));
+          // Employer share per cutoff
+          const sssErShare = r2(allPayroll.reduce((s,p) => {
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.sss / 2;
+          }, 0));
+          const sssTotalCutoff = r2(sssEmpShare + sssErShare);
+          const sssTotalMonthly = r2(sssTotalCutoff * 2);
+
+          // ── PhilHealth Payables ───────────────────────────────────────────
+          const phEmpShare = r2(sumK(allPayroll, "philhealth"));
+          const phErShare = r2(allPayroll.reduce((s,p) => {
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.philhealth / 2;
+          }, 0));
+          const phTotalCutoff = r2(phEmpShare + phErShare);
+          const phTotalMonthly = r2(phTotalCutoff * 2);
+
+          // ── Pag-IBIG Payables ─────────────────────────────────────────────
+          const hdmfEmpShare = r2(sumK(allPayroll, "hdmf"));
+          const hdmfErShare = r2(allPayroll.reduce((s,p) => {
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.pagibig / 2;
+          }, 0));
+          const hdmfTotalCutoff = r2(hdmfEmpShare + hdmfErShare);
+          const hdmfTotalMonthly = r2(hdmfTotalCutoff * 2);
+
+          // ── EC Insurance ──────────────────────────────────────────────────
+          const ecTotal = r2(allPayroll.reduce((s,p) => {
+            const g = p.emp.isSupervisor ? GOVT_EMP.supervisor : GOVT_EMP.janitor;
+            return s + g.ec / 2;
+          }, 0));
+
+          // ── Loan remittances ──────────────────────────────────────────────
+          const sssLoanRemit   = r2(sumK(allPayroll, "sssLoans"));
+          const hdmfLoanRemit  = r2(sumK(allPayroll, "hdmfLoans"));
+
+          // ── Supplies ─────────────────────────────────────────────────────
+          const supplies = parseFloat(suppliesAmt) || 0;
+
+          // ── Grand Total Payables this cutoff ─────────────────────────────
+          const grandTotal = r2(sssTotalCutoff + phTotalCutoff + hdmfTotalCutoff + ecTotal + sssLoanRemit + hdmfLoanRemit + vatTotal + supplies);
+
+          const Card = ({title, icon, color, children}) => (
+            <div style={{background:"#fff",borderRadius:12,overflow:"hidden",boxShadow:"0 2px 10px rgba(0,0,0,0.07)",marginBottom:18}}>
+              <div style={{background:color,color:"#fff",padding:"11px 18px",fontWeight:800,fontSize:14,display:"flex",alignItems:"center",gap:8}}>
+                <span>{icon}</span><span>{title}</span>
+              </div>
+              <div>{children}</div>
+            </div>
+          );
+
+          const Row = ({label,value,sub,bold,indent,highlight,red,green,border})=>(
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",
+              padding: "9px 18px",
+              background: highlight?"#fffbeb":bold?"#f8fafc":"#fff",
+              borderTop: border?"2px solid #e5e7eb":"1px solid #f3f4f6"}}>
+              <div>
+                <div style={{fontSize:13,fontWeight:bold?700:400,color:red?C.red:green?C.teal:"#374151",paddingLeft:indent?16:0}}>{label}</div>
+                {sub&&<div style={{fontSize:11,color:"#9ca3af",paddingLeft:indent?16:0,marginTop:1}}>{sub}</div>}
+              </div>
+              <div style={{fontWeight:bold?800:600,fontSize:bold?14:13,color:red?C.red:green?C.teal:highlight?C.amber:"#1f2937",textAlign:"right"}}>
+                {fmt(value)}
+              </div>
+            </div>
+          );
+
+          const monthLabel = new Date(month+"-02").toLocaleString("en-PH",{month:"long",year:"numeric"});
+          const [mo, yr] = [monthLabel.split(" ")[0], monthLabel.split(" ")[1]];
+          const qtr = Math.ceil((new Date(month+"-02").getMonth()+1)/3);
+
+          return (
+          <div>
+            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:20}}>
+              <div>
+                <h2 style={{margin:0,color:C.navy,fontWeight:900}}>Government & Other Payables</h2>
+                <div style={{fontSize:12,color:"#6b7280",marginTop:3}}>{periodStr} • Q{qtr} {yr}</div>
+              </div>
+              {/* Grand Total Banner */}
+              <div style={{background:`linear-gradient(135deg,${C.navy},${C.teal})`,color:"#fff",borderRadius:12,padding:"12px 24px",textAlign:"right"}}>
+                <div style={{fontSize:11,opacity:0.8}}>TOTAL PAYABLES THIS CUT-OFF</div>
+                <div style={{fontWeight:900,fontSize:24}}>{fmt(grandTotal)}</div>
+              </div>
+            </div>
+
+            <div style={{display:"grid",gridTemplateColumns:"1fr 1fr",gap:20}}>
+
+              {/* ── LEFT COLUMN ── */}
+              <div>
+
+                {/* SSS */}
+                <Card title="SSS Contributions" icon="🏦" color="#1d4ed8">
+                  <Row label="Employee Share (deducted from payroll)" value={sssEmpShare}
+                    sub={`${employees.length} employees × avg ₱${r2(sssEmpShare/employees.length).toFixed(2)}`} indent />
+                  <Row label="Employer Share" value={sssErShare}
+                    sub="Hygeia's obligation per contract" indent />
+                  <Row label="TOTAL SSS CONTRIBUTION" value={sssTotalCutoff} bold border />
+                  <Row label="Monthly (both cutoffs)" value={sssTotalMonthly} sub="Due every 10th of following month" indent />
+
+                  {sssLoanRemit > 0 && <>
+                    <div style={{background:"#eff6ff",padding:"7px 18px",fontSize:11,fontWeight:700,color:"#1d4ed8",borderTop:"1px solid #dbeafe"}}>
+                      SSS LOAN REMITTANCES (separate from contributions)
+                    </div>
+                    <Row label="SSS Salary Loans collected" value={sssLoanRemit}
+                      sub="Amount deducted from employees — remit to SSS" indent />
+                  </>}
+                </Card>
+
+                {/* PhilHealth */}
+                <Card title="PhilHealth Contributions" icon="💊" color="#059669">
+                  <Row label="Employee Share (2.5%)" value={phEmpShare}
+                    sub={`Deducted from payroll — ${employees.length} employees`} indent />
+                  <Row label="Employer Share (2.5%)" value={phErShare}
+                    sub="Hygeia's obligation" indent />
+                  <Row label="TOTAL PHILHEALTH" value={phTotalCutoff} bold border />
+                  <Row label="Monthly (both cutoffs)" value={phTotalMonthly} sub="Due every 10th of following month" indent />
+                </Card>
+
+                {/* Supplies */}
+                <Card title="Cleaning Supplies" icon="🧹" color="#7c3aed">
+                  <div style={{padding:"14px 18px"}}>
+                    <div style={{fontSize:12,color:"#6b7280",marginBottom:8}}>Enter supplies cost for this cut-off period:</div>
+                    <div style={{display:"flex",alignItems:"center",gap:10}}>
+                      <span style={{fontSize:13,fontWeight:600}}>₱</span>
+                      <input type="number" min="0" value={suppliesAmt}
+                        onChange={e=>setSuppliesAmt(e.target.value)}
+                        placeholder="0.00"
+                        style={{flex:1,padding:"9px 12px",borderRadius:7,border:"1.5px solid #dde3ed",fontSize:16,fontWeight:700,textAlign:"right"}}/>
+                    </div>
+                    <div style={{fontSize:11,color:"#9ca3af",marginTop:6}}>
+                      Note: Per contract, cleaning supplies are billed separately to the client
+                    </div>
+                  </div>
+                  {supplies>0&&<Row label="Supplies this cut-off" value={supplies} bold />}
+                  {supplies>0&&<Row indent label="Monthly estimate" value={r2(supplies*2)} sub="Both cutoffs combined" />}
+                </Card>
+              </div>
+
+              {/* ── RIGHT COLUMN ── */}
+              <div>
+
+                {/* Pag-IBIG */}
+                <Card title="Pag-IBIG / HDMF" icon="🏠" color="#b45309">
+                  <Row label="Employee Share (2%, max ₱100)" value={hdmfEmpShare}
+                    sub="Deducted from payroll" indent />
+                  <Row label="Employer Share (2%, max ₱100)" value={hdmfErShare}
+                    sub="Hygeia's obligation" indent />
+                  <Row label="TOTAL PAG-IBIG" value={hdmfTotalCutoff} bold border />
+                  <Row label="Monthly (both cutoffs)" value={hdmfTotalMonthly} sub="Due every 10th of following month" indent />
+
+                  {hdmfLoanRemit > 0 && <>
+                    <div style={{background:"#fef3c7",padding:"7px 18px",fontSize:11,fontWeight:700,color:"#92400e",borderTop:"1px solid #fde68a"}}>
+                      PAG-IBIG LOAN REMITTANCES (separate from contributions)
+                    </div>
+                    <Row label="MPL / Calamity loans collected" value={hdmfLoanRemit}
+                      sub="Amount deducted from employees — remit to HDMF" indent />
+                  </>}
+                </Card>
+
+                {/* EC Insurance */}
+                <Card title="EC Insurance (Employer Only)" icon="🛡️" color="#64748b">
+                  <Row label="EC Insurance per cut-off" value={ecTotal}
+                    sub={`₱30/mo per employee × ${employees.length} staff ÷ 2`} indent />
+                  <Row label="Monthly" value={r2(ecTotal*2)} bold border />
+                </Card>
+
+                {/* VAT */}
+                <Card title="VAT (Value Added Tax — 12%)" icon="🧾" color="#dc2626">
+                  <Row label="VAT this cut-off" value={vatTotal}
+                    sub="Based on gross receipts from billing" indent />
+                  <Row label="VAT this month (both cutoffs)" value={vatMonthly} bold border />
+                  <Row label="Q{qtr} {yr} Quarterly VAT (estimate)" value={vatQuarterly}
+                    sub="3 months × monthly VAT — file quarterly BIR Form 2550Q" indent highlight />
+                  <div style={{padding:"10px 18px",background:"#fef2f2",borderTop:"1px solid #fee2e2"}}>
+                    <div style={{fontSize:11,fontWeight:700,color:C.red,marginBottom:4}}>📅 VAT Filing Deadlines</div>
+                    <div style={{fontSize:11,color:"#6b7280"}}>
+                      Q1 (Jan–Mar): Due <b>April 25</b><br/>
+                      Q2 (Apr–Jun): Due <b>July 25</b><br/>
+                      Q3 (Jul–Sep): Due <b>October 25</b><br/>
+                      Q4 (Oct–Dec): Due <b>January 25</b>
+                    </div>
+                  </div>
+                </Card>
+
+                {/* Summary of all payables */}
+                <Card title="Summary — All Payables This Cut-off" icon="📋" color={C.navy}>
+                  <Row label="SSS Contributions" value={sssTotalCutoff} indent />
+                  <Row label="SSS Loan Remittances" value={sssLoanRemit} indent />
+                  <Row label="PhilHealth" value={phTotalCutoff} indent />
+                  <Row label="Pag-IBIG Contributions" value={hdmfTotalCutoff} indent />
+                  <Row label="Pag-IBIG Loan Remittances" value={hdmfLoanRemit} indent />
+                  <Row label="EC Insurance" value={ecTotal} indent />
+                  <Row label="VAT" value={vatTotal} indent />
+                  {supplies>0&&<Row label="Cleaning Supplies" value={supplies} indent />}
+                  <Row label="GRAND TOTAL PAYABLES" value={grandTotal} bold border green />
+                  <div style={{padding:"8px 18px 12px",fontSize:11,color:"#9ca3af"}}>
+                    * Govt contributions (SSS, PhilHealth, Pag-IBIG) are due on the 10th of the following month.<br/>
+                    * Loan remittances must be filed separately from contributions.<br/>
+                    * VAT is filed quarterly via BIR Form 2550Q.
+                  </div>
+                </Card>
+
+              </div>
+            </div>
+          </div>
+          );
+        })()}
 
       </div>
     </div>
