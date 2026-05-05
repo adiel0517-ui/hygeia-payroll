@@ -151,9 +151,10 @@ function computePayroll(emp, att, empLoans) {
   const nsAmt      = r2(nsRate*(att.nsHrs||0));
   const otRate     = r2(hp*OT_PCT);
   const otAmt      = r2(otRate*(att.otHrs||0));
-  const extraAmt   = r2(dp*(att.extraDays||0));
+  const straightAmt= r2(hp*(att.straightHrs||0));  // straight duty: hourly × 1.0
+  const extraAmt   = r2(dp*(att.extraDays||0));    // day-off relief: daily × days
   const adjustment = r2(att.adjustment||0);
-  const subTotal   = r2(basicPay+lhAmt+shAmt+nsAmt+otAmt+extraAmt+adjustment);
+  const subTotal   = r2(basicPay+lhAmt+shAmt+nsAmt+otAmt+straightAmt+extraAmt+adjustment);
 
   const sss        = r2(getSSS(monthly)/2);
   const philhealth = r2(getPH(monthly));
@@ -168,7 +169,7 @@ function computePayroll(emp, att, empLoans) {
   const totalDed  = r2(sss+philhealth+hdmf+totalLoans+medFee+vale+utAmt);
   const netPay    = r2(subTotal-totalDed);
 
-  return { dp, hp, smBasic, monthly, basicPay, lhAmt, shRate, shAmt, nsRate, nsAmt, otRate, otAmt, extraAmt, adjustment, subTotal, sss, philhealth, hdmf, sssLoans, hdmfLoans, totalLoans, medFee, vale, utAmt, totalDed, netPay };
+  return { dp, hp, smBasic, monthly, basicPay, lhAmt, shRate, shAmt, nsRate, nsAmt, otRate, otAmt, straightAmt, extraAmt, adjustment, subTotal, sss, philhealth, hdmf, sssLoans, hdmfLoans, totalLoans, medFee, vale, utAmt, totalDed, netPay };
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -179,25 +180,30 @@ function computePayroll(emp, att, empLoans) {
 function computeBilling(emp, att) {
   const db  = emp.dailyBilling;
   const hb  = r2(db/8);
+  const hp  = r2(emp.dailyPayroll/8); // payroll hourly rate
   // Semi-monthly basic comes from monthly contract rate / 2 directly
   // NOT from daily * FACTOR (which loses precision due to rounding of daily)
-  // monthly contract rate = calcMonthlyRate(emp) stored in emp.monthlyBilling
   const smb = r2(emp.monthlyBilling / 2);
 
   const basicBill = r2(smb - db*(att.absences||0));
   const lhBill    = r2(hb*(att.lhHrs||0));
-  const shRateB   = r2(hb*SH_PCT);           // billing SH = hourly × 30% (38.87)
+  const shRateB   = r2(hb*SH_PCT);           // billing SH = billing hourly × 30% (38.87)
   const shBill    = r2(shRateB*(att.shHrs||0));
-  const nsRateB   = r2(hb*NS_PCT);           // billing NS = hourly × 10% (12.96)
+  // NS rate differs per hospital contract:
+  // PRIME:     payroll hourly × 11% = 86.875 × 0.11 = 9.56
+  // UNIHEALTH: billing hourly × 10% = 129.56 × 0.10 = 12.96
+  const isPrime   = emp.hospital.includes("PRIME");
+  const nsRateB   = isPrime ? r2(hp*0.11) : r2(hb*NS_PCT);
   const nsBill    = r2(nsRateB*(att.nsHrs||0));
+  const straightBill = r2(hb*(att.straightHrs||0)); // straight duty hrs × billing hourly
   const extraBill = r2(db*(att.extraDays||0));
   const insurance = r2(att.insurance||0);
   const utRateB   = r2(hb/60);
   const utBill    = r2(utRateB*(att.utMins||0));
-  const subTotal  = r2(basicBill+lhBill+shBill+nsBill+extraBill+insurance);
+  const subTotal  = r2(basicBill+lhBill+shBill+nsBill+straightBill+extraBill+insurance);
   const netBill   = r2(subTotal-utBill);
 
-  return { db, hb, smb, basicBill, lhBill, shRateB, shBill, nsRateB, nsBill, extraBill, insurance, utRateB, utBill, subTotal, netBill };
+  return { db, hb, smb, basicBill, lhBill, shRateB, shBill, nsRateB, nsBill, straightBill, extraBill, insurance, utRateB, utBill, subTotal, netBill };
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -521,7 +527,7 @@ export default function App() {
   const [showLF, setShowLF] = useState(false);
   const [lf, setLF] = useState({empId:"",type:LOAN_TYPES[0],monthly:"",balance:"",startMonth:month});
 
-  const getAtt = (id) => attendance[id] || {absences:0,lhHrs:0,shHrs:0,nsHrs:0,otHrs:0,extraDays:0,adjustment:0,medFee:0,vale:0,utMins:0,insurance:0};
+  const getAtt = (id) => attendance[id] || {absences:0,lhHrs:0,shHrs:0,nsHrs:0,otHrs:0,straightHrs:0,extraDays:0,adjustment:0,medFee:0,vale:0,utMins:0,insurance:0};
   const setAF  = (id,f,v) => setAtt(p=>({...p,[id]:{...getAtt(id),[f]:parseFloat(v)||0}}));
 
   const monthStr   = new Date(month+"-02").toLocaleString("en-PH",{month:"long",year:"numeric"});
@@ -798,7 +804,7 @@ export default function App() {
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:12}}>
                   <thead><tr style={{background:C.light}}>
-                    {["Employee","Absences","LH Hrs","SH Hrs","NS Hrs","OT Hrs","Extra Days","Adjustment","Med Fee","Vale","UT (mins)","Insurance"].map(h=>(
+                    {["Employee","Absences","LH Hrs","SH Hrs","NS Hrs","OT Hrs","Straight Hrs","Extra Days","Adjustment","Med Fee","Vale","UT (mins)","Insurance"].map(h=>(
                       <th key={h} style={{padding:"8px 8px",textAlign:h==="Employee"?"left":"center",fontWeight:700,fontSize:11,whiteSpace:"nowrap"}}>{h}</th>
                     ))}
                   </tr></thead>
@@ -811,7 +817,7 @@ export default function App() {
                             {e.surname}, {e.name}
                             {e.isSupervisor&&<span style={{marginLeft:5,background:"#fef3c7",color:"#92400e",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>SUP</span>}
                           </td>
-                          {["absences","lhHrs","shHrs","nsHrs","otHrs","extraDays","adjustment","medFee","vale","utMins","insurance"].map(f=>(
+                          {["absences","lhHrs","shHrs","nsHrs","otHrs","straightHrs","extraDays","adjustment","medFee","vale","utMins","insurance"].map(f=>(
                             <td key={f} style={{padding:"4px 6px",textAlign:"center"}}>
                               <input type="number" min="0" value={a[f]||0} onChange={ev=>setAF(e.id,f,ev.target.value)}
                                 style={{width:52,padding:"4px 5px",borderRadius:5,border:"1.5px solid "+C.border,textAlign:"center",fontSize:12}}/>
@@ -833,7 +839,7 @@ export default function App() {
               <div style={{overflowX:"auto"}}>
                 <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                   <thead><tr style={{background:C.light}}>
-                    {[["#","","l"],["Surname","","l"],["Name","","l"],["Basic","","r"],["LH","","r"],["SH","","r"],["NS","","r"],["OT","","r"],["Extra","","r"],["Adj","","r"],["SUB-TOTAL",C.navy,"r"],["SSS",C.red,"r"],["PhilHealth",C.red,"r"],["Pag-IBIG",C.red,"r"],["SSS Loan",C.amber,"r"],["HDMF Loan",C.amber,"r"],["Med/Vale/UT",C.red,"r"],["NET PAY",C.teal,"r"],[""]].map(([h,col,a],i)=>(
+                    {[["#","","l"],["Surname","","l"],["Name","","l"],["Basic","","r"],["LH","","r"],["SH","","r"],["NS","","r"],["OT","","r"],["Straight","","r"],["Extra","","r"],["Adj","","r"],["SUB-TOTAL",C.navy,"r"],["SSS",C.red,"r"],["PhilHealth",C.red,"r"],["Pag-IBIG",C.red,"r"],["SSS Loan",C.amber,"r"],["HDMF Loan",C.amber,"r"],["Med/Vale/UT",C.red,"r"],["NET PAY",C.teal,"r"],[""]].map(([h,col,a],i)=>(
                       <th key={i} style={{padding:"9px 8px",textAlign:a==="r"?"right":"left",fontSize:10,fontWeight:700,whiteSpace:"nowrap",color:col||"#374151"}}>{h}</th>
                     ))}
                   </tr></thead>
@@ -843,7 +849,7 @@ export default function App() {
                         <td style={{padding:"8px 8px",fontSize:11,color:"#9ca3af"}}>{i+1}</td>
                         <td style={{padding:"8px 8px",fontWeight:700,fontSize:12}}>{emp.surname}</td>
                         <td style={{padding:"8px 8px",fontSize:12}}>{emp.name}{emp.isSupervisor&&<span style={{marginLeft:4,background:"#fef3c7",color:"#92400e",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:700}}>SUP</span>}</td>
-                        {[basicPay,lhAmt,shAmt,nsAmt,otAmt,extraAmt,adjustment].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right"}}>{fmt(v)}</td>)}
+                        {[basicPay,lhAmt,shAmt,nsAmt,otAmt,straightAmt,extraAmt,adjustment].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right"}}>{fmt(v)}</td>)}
                         <td style={{padding:"8px 8px",textAlign:"right",fontWeight:700,color:C.navy}}>{fmt(subTotal)}</td>
                         {[sss,philhealth,hdmf].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right",color:C.red}}>{fmt(v)}</td>)}
                         {[sssLoans,hdmfLoans].map((v,vi)=><td key={vi} style={{padding:"8px 8px",textAlign:"right",color:C.amber}}>{v>0?fmt(v):"—"}</td>)}
@@ -856,7 +862,7 @@ export default function App() {
                   <tfoot>
                     <tr style={{background:C.navy,color:"#fff",fontWeight:700}}>
                       <td colSpan={3} style={{padding:"10px 8px",fontSize:12}}>TOTAL — {filteredPayroll.length} employees</td>
-                      {["basicPay","lhAmt","shAmt","nsAmt","otAmt","extraAmt","adjustment","subTotal","sss","philhealth","hdmf","sssLoans","hdmfLoans"].map(k=>(
+                      {["basicPay","lhAmt","shAmt","nsAmt","otAmt","straightAmt","extraAmt","adjustment","subTotal","sss","philhealth","hdmf","sssLoans","hdmfLoans"].map(k=>(
                         <td key={k} style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(filteredPayroll,k))}</td>
                       ))}
                       <td style={{padding:"10px 8px",textAlign:"right",fontSize:11}}>{fmt(sumK(filteredPayroll,"medFee")+sumK(filteredPayroll,"vale")+sumK(filteredPayroll,"utAmt"))}</td>
@@ -909,7 +915,7 @@ export default function App() {
 
                       {/* Earnings */}
                       <div style={{fontWeight:800,color:C.navy,borderBottom:"2px solid "+C.navy,paddingBottom:5,marginBottom:8,fontSize:13}}>EARNINGS</div>
-                      {[["Basic Pay",pr.basicPay],pr.lhAmt>0&&[`Legal Holiday (${pr.att.lhHrs} hrs × ₱${pr.hp})`,pr.lhAmt],pr.shAmt>0&&[`Special Holiday (${pr.att.shHrs} hrs × ₱${pr.shRate})`,pr.shAmt],pr.nsAmt>0&&[`Night Shift (${pr.att.nsHrs} hrs × ₱${pr.nsRate})`,pr.nsAmt],pr.otAmt>0&&[`Overtime (${pr.att.otHrs} hrs × ₱${pr.otRate})`,pr.otAmt],pr.extraAmt>0&&[`Extra/Day-off (${pr.att.extraDays} day/s)`,pr.extraAmt],pr.adjustment&&["Adjustment",pr.adjustment]].filter(Boolean).map(([l,v])=>(
+                      {[["Basic Pay",pr.basicPay],pr.lhAmt>0&&[`Legal Holiday (${pr.att.lhHrs} hrs × ₱${pr.hp})`,pr.lhAmt],pr.shAmt>0&&[`Special Holiday (${pr.att.shHrs} hrs × ₱${pr.shRate})`,pr.shAmt],pr.nsAmt>0&&[`Night Shift (${pr.att.nsHrs} hrs × ₱${pr.nsRate})`,pr.nsAmt],pr.otAmt>0&&[`Overtime (${pr.att.otHrs} hrs × ₱${pr.otRate})`,pr.otAmt],pr.straightAmt>0&&[`Straight Duty (${pr.att.straightHrs} hrs × ₱${pr.hp})`,pr.straightAmt],pr.extraAmt>0&&[`Extra/Day-off (${pr.att.extraDays} day/s)`,pr.extraAmt],pr.adjustment&&["Adjustment",pr.adjustment]].filter(Boolean).map(([l,v])=>(
                         <div key={l} style={{display:"flex",justifyContent:"space-between",padding:"5px 0",borderBottom:"1px solid #f3f4f6",fontSize:13}}>
                           <span style={{color:"#4b5563"}}>{l}</span><span style={{fontWeight:600}}>{fmt(v)}</span>
                         </div>
@@ -991,7 +997,7 @@ export default function App() {
                   <div style={{overflowX:"auto"}}>
                     <table style={{width:"100%",borderCollapse:"collapse",fontSize:11}}>
                       <thead><tr style={{background:C.light}}>
-                        {["#","Surname","Name","Basic Rate\n(S/M)","Daily Rate","Hourly Rate","Absences","Basic","LH Rate","LH Hrs","Legal Hol.","SH Rate","SH Hrs","Spec. Hol.","NS Rate","NS Hrs","Night Shift","Extra Days","Extra Pay","SUB-TOTAL","Insurance","UT Rate","UT Mins","UT","NET"].map((h,i)=>(
+                        {["#","Surname","Name","Basic Rate\n(S/M)","Daily Rate","Hourly Rate","Absences","Basic","LH Rate","LH Hrs","Legal Hol.","SH Rate","SH Hrs","Spec. Hol.","NS Rate","NS Hrs","Night Shift","Str. Hrs","Straight","Extra Days","Extra Pay","SUB-TOTAL","Insurance","UT Rate","UT Mins","UT","NET"].map((h,i)=>(
                           <th key={i} style={{padding:"8px 7px",textAlign:["#","Surname","Name"].includes(h)?"left":"right",fontSize:10,fontWeight:700,whiteSpace:"pre-line",lineHeight:1.2}}>{h}</th>
                         ))}
                       </tr></thead>
@@ -1017,6 +1023,8 @@ export default function App() {
                               <td style={{padding:"8px 7px",textAlign:"right",fontSize:10}}>{fmt(r.nsRateB)}</td>
                               <td style={{padding:"8px 7px",textAlign:"right"}}>{a.nsHrs||"—"}</td>
                               <td style={{padding:"8px 7px",textAlign:"right",color:r.nsBill>0?C.navy:""}}>{r.nsBill>0?fmt(r.nsBill):"—"}</td>
+                              <td style={{padding:"8px 7px",textAlign:"right"}}>{a.straightHrs||"—"}</td>
+                              <td style={{padding:"8px 7px",textAlign:"right",color:r.straightBill>0?C.navy:""}}>{r.straightBill>0?fmt(r.straightBill):"—"}</td>
                               <td style={{padding:"8px 7px",textAlign:"right"}}>{a.extraDays||"—"}</td>
                               <td style={{padding:"8px 7px",textAlign:"right",color:r.extraBill>0?C.teal:""}}>{r.extraBill>0?fmt(r.extraBill):"—"}</td>
                               <td style={{padding:"8px 7px",textAlign:"right",fontWeight:700,color:C.navy}}>{fmt(r.subTotal)}</td>
@@ -1039,6 +1047,8 @@ export default function App() {
                           <td style={{padding:"10px 8px",textAlign:"right"}}>{fmt(sumK(billingRows,"shBill"))}</td>
                           <td></td><td></td>
                           <td style={{padding:"10px 8px",textAlign:"right"}}>{fmt(sumK(billingRows,"nsBill"))}</td>
+                          <td></td>
+                          <td style={{padding:"10px 8px",textAlign:"right"}}>{fmt(sumK(billingRows,"straightBill"))}</td>
                           <td></td>
                           <td style={{padding:"10px 8px",textAlign:"right"}}>{fmt(sumK(billingRows,"extraBill"))}</td>
                           <td style={{padding:"10px 8px",textAlign:"right"}}>{fmt(sumK(billingRows,"subTotal"))}</td>
@@ -1527,6 +1537,7 @@ function MiniPayslip({emp,p,att,loans,period,month}) {
             {p.shAmt>0&&<tr><td style={{padding:"1px 0",paddingLeft:8}}>Special Holiday</td><td style={{textAlign:"right"}}>{fmtN(p.shAmt)}</td></tr>}
             {p.nsAmt>0&&<tr><td style={{padding:"1px 0",paddingLeft:8}}>Night Shift</td><td style={{textAlign:"right"}}>{fmtN(p.nsAmt)}</td></tr>}
             {p.otAmt>0&&<tr><td style={{padding:"1px 0",paddingLeft:8}}>Overtime</td><td style={{textAlign:"right"}}>{fmtN(p.otAmt)}</td></tr>}
+            {p.straightAmt>0&&<tr><td style={{padding:"1px 0",paddingLeft:8}}>Straight Duty</td><td style={{textAlign:"right"}}>{fmtN(p.straightAmt)}</td></tr>}
             {p.extraAmt>0&&<tr><td style={{padding:"1px 0",paddingLeft:8}}>Extra/Day-off</td><td style={{textAlign:"right"}}>{fmtN(p.extraAmt)}</td></tr>}
             <tr style={{fontWeight:700,color:"#1a3558",borderTop:"1px solid #dde3ed"}}><td style={{padding:"3px 0"}}>SUB-TOTAL</td><td style={{textAlign:"right"}}>{fmtN(p.subTotal)}</td></tr>
             <tr style={{fontWeight:700,color:"#c0392b",borderBottom:"1px solid #dde3ed"}}><td colSpan={2} style={{padding:"3px 0"}}>DEDUCTIONS</td></tr>
